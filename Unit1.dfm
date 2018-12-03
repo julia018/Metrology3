@@ -1,8 +1,8 @@
 object Form1: TForm1
   Left = 226
   Top = 67
-  Width = 1044
-  Height = 634
+  Width = 1064
+  Height = 652
   Caption = #1052#1077#1090#1088#1080#1082#1080' '#1089#1083#1086#1078#1085#1086#1089#1090#1080' '#1087#1086#1090#1086#1082#1072' '#1076#1072#1085#1085#1099#1093
   Color = clActiveCaption
   Font.Charset = DEFAULT_CHARSET
@@ -18,7 +18,7 @@ object Form1: TForm1
   object lbl1: TLabel
     Left = 0
     Top = 0
-    Width = 1036
+    Width = 1048
     Height = 32
     Align = alTop
     Alignment = taCenter
