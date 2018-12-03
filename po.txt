@@ -1,5 +1,0 @@
-var a,b,c;
-alert("hello" + a);
-promt(b);
-c=a +b*(c+9);
-promt(c);
