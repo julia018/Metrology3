@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, Grids, StdCtrls, Math;
 type
-  Types = (T, P, M, C);
+  Types = (G, T, P, M, C);
   Adr = ^List;
   //Список операторов\операндов
   List = record
@@ -37,7 +37,7 @@ type
   private
     { Private declarations }
   public
-    procedure ControlC( data:string; i:integer; ClTyp:Types);
+    procedure ControlC(data: string;var i: integer; ClTyp:Types);
     procedure Analysis(const text: string);
     procedure Add(MainZv: Adr; const title: string; ClTyp:Types; i_o:Boolean);
     procedure Print;
@@ -109,33 +109,31 @@ var
 begin
   comment:=False;
   AssignFile(MyFile, FileName1);
-   Reset(MyFile);
-   //создание заглавных звеньев списков
-   New(Operand);
-   Operand.Next := Nil;
-   text1 := '';
-
-   while not (eof(MyFile)) do
-   begin
-      read(Myfile, ch);
-      if (ch = ';') or (ch = #10) or (ch = #13) then
-      begin
+  Reset(MyFile);
+  //создание заглавного звеньев списков
+  New(Operand);
+  Operand.Next := Nil;
+  text1 := '';
+  while not (eof(MyFile)) do
+  begin
+     read(Myfile, ch);
+     if (ch = ';') or (ch = #10) or (ch = #13) then
+     begin
         if ch = ';' then
           text1 := text1 + ch
         else
-          read(MyFile, ch);
+         read(MyFile, ch);
 
-      Analysis(text1+' ');//анализ строки
-      text1:='';
-      end
-      else
-        text1 := text1 + ch;
-   end;
-   if text1<>'' then
+       Analysis(text1+' ');//анализ строки
+       text1:='';
+     end
+     else
+       text1 := text1 + ch;
+  end;
+  if text1<>'' then
     Analysis(text1+' ');//анализ строки
-   CloseFile(MyFile);
-   print;
-   
+  CloseFile(MyFile);
+  print;
 end;
 
 procedure TForm1.ControlC(data: string;var i: integer; ClTyp:Types);
@@ -155,13 +153,13 @@ begin
                                                 inc(i);
                                               end;
 
-                                              if (text[i] in '0'..'9') and (length(CurrStr)=1) then
+                                              if (text[i] in ['0'..'9']) and (length(CurrStr)=1) then
                                                  CurrStr:='';
                                            end;
-       else:
+       else
        begin
          if (CurrStr<>'') then
-           Add(Operand,CurrStr,ClTyp,Fasle);
+           Add(Operand,CurrStr,ClTyp,False);
          CurrStr:='';
        end;
       end;
@@ -182,67 +180,63 @@ begin
    begin
      if comment then
        ComplAr := ComplAr + text[i]
-       else
-     case text[i] of
+     else
+     begin
+      case text[i] of
        '$','_','a'..'z','A'..'Z','0'..'9': begin
-       
+
                                               if (currStr<>'') and (pos('=',ComplAr)<>0) and (length(ComplAr) <> 0) then  //++--
                                               begin
-                                                Add(Operators, CurrStr, M, False);
+                                                Add(Operator, CurrStr, M, False);
                                                 ComplAr :='';
-                                              end
+                                              end;
                                               if (currStr<>'') and (pos('=',ComplAr)=0) and (length(ComplAr) <> 0) then
                                               begin
-                                                Add(Operators, CurrStr, G, False);
+                                                Add(Operator, CurrStr, G, False);
                                                 ComplAr :='';
-                                              end
-
+                                              end;
                                               currStr := currStr + text[i];
+                                              if (currStr = 'do') and (text[i+1]='{') then
+                                              begin
+                                                currStr := '';
+                                              end;
+                                              if ((currStr = 'while') or
+                                                 (currStr = 'for') or
+                                                 (currStr = 'switch') or
+                                                 (currStr = 'if')) and (text[i+1]='(')
+                                              then
+                                              begin
+                                                 i:=i+2;
+                                                 ControlC(text,i,C);
+                                                 currStr := '';
+                                              end;
 
-                                                 if (currStr = 'do') and (text[i+1]='{') then
-                                                 begin
-                                                  currStr := '';
-                                                 end;
-
-                                                 if ((currStr = 'while') or
-                                                    (currStr = 'for') or
-                                                    (currStr = 'switch') or
-                                                    (currStr = 'if')) and (text[i+1]='(')
-                                                    then
-                                                 begin
-                                                   i:=i+2;
-                                                   ControlC(text,i,C);
-                                                   currStr := '';
-                                                 end;
-
-                                                 if ((currStr = 'function') or
-                                                    (currStr = 'var') or
-                                                    (currStr = 'let') or
-                                                    (currStr = 'const')) and
-                                                    ((text[i+1]=' ') or (text[i+1]='(')) then
-                                                 begin
-                                                   i:=i+2;
-                                                   ControlC(text,i,T); 
-                                                   currStr := '';
-                                                 end;
-
-                                               end;
+                                              if ((currStr = 'function') or
+                                                 (currStr = 'var') or
+                                                 (currStr = 'let') or
+                                                 (currStr = 'const')) and
+                                                 ((text[i+1]=' ') or (text[i+1]='(')) then
+                                              begin
+                                                 i:=i+2;
+                                                 ControlC(text,i,T);
+                                                 currStr := '';
+                                              end;
+                                           end;
 
         '(': begin
-
                if currStr <> '' then
                begin
-                 Add(Operator, currStr + '( )');
+                 Add(Operator, currStr + '( )', T, False); // ТИП и ВВ.ВЫВод
                  currStr := '';
                end
                else
                begin
                  if ComplAr <> '' then
                  begin
-                   Add(Operator, ComplAr);
+                   Add(Operator, ComplAr, T, False); // ТИП и ВВ-ВЫВ
                    ComplAr := '';
                  end;
-                 Add(Operator, '( )');
+                 Add(Operator, '( )', T,  False);
                end;
              end;
 
@@ -265,16 +259,17 @@ begin
 
                                                                         if ComplAr = '//' then i := length(text);
 
-                                                                      end;
+                                                                   end;
 
 
          ':': begin
                 CurrStr:='';
               end;
 
-              end;
-
+      end;
+      i:=i+1;
      end; // конец case
+
 
      if ComplAr = '/*' then comment := true;
      if pos('*/', ComplAr) <> 0 then
@@ -284,7 +279,6 @@ begin
      end;
      inc(i);
     end;
-end;
 
 procedure TForm1.Add(MainZv: Adr; const title: string; ClTyp:Types; i_o:Boolean );
 var
