@@ -47,9 +47,9 @@ type
   private
     { Private declarations }
   public
-    procedure ControlC(data: string;var i: integer; ClTyp:Types; i_o:Boolean);
+    procedure ControlC(data: string;var i: integer; ClTyp:Types; i_o, incFl:Boolean);
     procedure Analysis(const text: string);
-    procedure Add(MainZv: Adr; const title: string; ClTyp:Types; i_o:Boolean);
+    procedure Add(MainZv: Adr; const title: string; ClTyp:Types; i_o, incFl:Boolean);
     procedure Print;
   end;
 
@@ -74,8 +74,8 @@ begin
   New(Operand);
   Operand.Next := nil;
   Row := 0;
-  strngrd1.Cells[0,Row] := 'Идентификатор';
-  strngrd1.Cells[1,Row] := 'Спен';
+  strngrd1.Cells[0,Row] := '             Идентификатор';
+  strngrd1.Cells[1,Row] := '                        Спен';
   strngrd1.RowCount:= 1;
   lblSumSpen.Caption := 'Суммарный спен программы = ';
   lbl5.Caption := 'Qп = ';
@@ -123,8 +123,8 @@ begin
   for i:=0 to ColCount-1 do
     Cols[i].Clear;
   Row := 0;
-  strngrd1.Cells[0,Row] := 'Идентификатор';
-  strngrd1.Cells[1,Row] := 'Спен';
+  strngrd1.Cells[0,Row] := '             Идентификатор';
+  strngrd1.Cells[1,Row] := '                        Спен';
 
   strngrd2.Cells[0,Row] := #10#13#10#13'Группа'#13#10'перем-х';
   strngrd2.Cells[1,Row] := #10#13#10#13'        P';
@@ -186,7 +186,7 @@ begin
   print;
 end;
 
-procedure TForm1.ControlC(data: string;var i: integer; ClTyp:Types; i_o:Boolean);
+procedure TForm1.ControlC(data: string;var i: integer; ClTyp:Types; i_o, incFl:Boolean);
 var
   CurrStr:string;
   StrBol:Boolean;
@@ -228,8 +228,8 @@ begin
 
        else
        begin
-         if (CurrStr<>'') then
-           Add(Operand,CurrStr,ClTyp,i_o);
+         if (CurrStr<>'') and not (currStr[1] in ['0'..'9']) then
+           Add(Operand,CurrStr,ClTyp,i_o, incFl);
          CurrStr:='';
        end;
       end;
@@ -260,13 +260,13 @@ begin
        '$','_','a'..'z','A'..'Z','0'..'9': begin
                                               if (currStr<>'') and (pos('=',ComplAr)<>0) and (length(ComplAr) <> 0) then  //++--
                                               begin
-                                                Add(Operand, CurrStr, M, False);
+                                                Add(Operand, CurrStr, M, False, True);
                                                 CurrStr:='';
                                                 ComplAr :='';
                                               end;
                                               if (currStr<>'') and (pos('=',ComplAr)=0) and (length(ComplAr) <> 0) then
                                               begin
-                                                Add(Operand, CurrStr, G, False);
+                                                Add(Operand, CurrStr, G, False, True);
                                                 CurrStr:='';
                                                 ComplAr :='';
                                               end;
@@ -285,7 +285,7 @@ begin
                                               then
                                               begin
                                                  i:=i+2;
-                                                 ControlC(text,i,C,False);
+                                                 ControlC(text,i,C,False, True);
                                                  currStr := '';
                                               end;
 
@@ -296,7 +296,7 @@ begin
                                                     inc(i)
                                                   end;
                                                   inc(i);
-                                                  ControlC(text,i,T,False);
+                                                  ControlC(text,i,T,False, False);
                                                 end;
 
                                               if ((currStr = 'var') or(currStr = 'let')
@@ -305,22 +305,27 @@ begin
                                               begin
                                                  i:=i+2;
                                                  if currStr = 'const' then
-                                                   ControlC(text,i,M,False)
+                                                   ControlC(text,i,M,False, False)
                                                  else
-                                                   ControlC(text,i,T,False);
+                                                   ControlC(text,i,T,False, False);
                                                  currStr := '';
                                               end;
                                               if ((currStr = 'alert') or (currStr = 'prompt'))then
                                               begin
                                                  i:=i+2;
                                                  if (currStr = 'alert') then
-                                                   ControlC(text,i,T,True)
+                                                   ControlC(text,i,T,True, True)
                                                  else
-                                                   ControlC(text,i,P,True);
+                                                   ControlC(text,i,P,True, True);
                                                  currStr := '';
                                               end;
                                               if (currStr = 'break') or (currStr = 'continue') or (currStr = 'return')then
                                               begin
+                                                 if (currStr = 'return') then
+                                                 begin
+                                                   i := i + 2;
+                                                   ControlC(text,i,T,False, True);
+                                                 end;
                                                  currStr := '';
                                               end;
                                            end;
@@ -329,7 +334,7 @@ begin
                if (currStr <> '') and (ComplAr='') then
                begin
                  inc(i);
-                 ControlC(text,i,M,False);
+                 ControlC(text,i,M,False, True);
                  currStr := '';
                end;
              end;
@@ -382,7 +387,7 @@ begin
 end;
 end;
 
-procedure TForm1.Add(MainZv: Adr; const title: string; ClTyp:Types; i_o:Boolean );
+procedure TForm1.Add(MainZv: Adr; const title: string; ClTyp:Types; i_o, incFl:Boolean );
 var
   fl: Boolean;
   AdrZv: Adr;
@@ -397,8 +402,9 @@ begin
       if ord(AdrZv^.ClassType)<ord(ClTyp)then
       AdrZv^.ClassType:= ClTyp;
       if i_o=True then
-      AdrZv^.In_Out:=True;
-      inc(AdrZv^.Count);
+        AdrZv^.In_Out:=True;
+      if incFl then
+        inc(AdrZv^.Count);
       fl := False; // элемент найден
     end;
   end;

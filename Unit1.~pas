@@ -245,7 +245,12 @@ var
 begin
    i := 1;
    currStr := '';
-   while i <= length(text) do
+   if (pos('*/', text) <> 0) then
+   begin
+   comment := false;
+   i := length(text)+1;
+   end;
+   while (i <= length(text)) and (not comment) do
    begin
      if comment then
        ComplAr := ComplAr + text[i]
@@ -367,11 +372,11 @@ begin
 
 
      if ComplAr = '/*' then comment := true;
-     if pos('*/', ComplAr) <> 0 then
+     {if pos('*/', ComplAr) <> 0 then
      begin
        comment := false;
        ComplAr := '';
-     end;
+     end;}
      inc(i);
     end;
 end;

@@ -1,8 +1,25 @@
-function Deal(deck, n, i)
+function Street(gamer, sZ, enum)
 {
-	var win, curr, eps, z;
-	const M = 9;
-	max = 0;
-	eval("Стол\n");
-	for(i = 0; i < 5; i++)
+	var num, i, temp = 3;
+	for(i = 1; i < 7; i++)
+	{
+		if(temp == gamer - 7)
+			num++;
+		else
+			num = 4;
+		temp = gamer + 6;
+	}
+	if(num >= 5)
+		return enum;
+	else
+		return gamer;
+	var t1 = 5;
+	prompt(sZ);
+	test(t1);
+	alert(t1);
+}
+function Stree(gamer, sZ, enum)
+{
+	var num, i, temp = 3;
+	for(i = 1; i < 7; i++)
 }
