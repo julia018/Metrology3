@@ -6,9 +6,9 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, Grids, StdCtrls, Math;
 type
-  Types = (G, T, P, M, C);
+  Types = ( T, G, P, M, C);
   Adr = ^List;
-  //Список операторов\операндов
+  //Список операндов
   List = record
     Name: string[255];
     Count: Integer;
@@ -30,14 +30,24 @@ type
     vouge: TLabel;
     gucci: TLabel;
     cosmos: TLabel;
+    lblSpen: TLabel;
+    lblSumSpen: TLabel;
+    strngrd2: TStringGrid;
+    lblChep: TLabel;
+    lbl3: TLabel;
+    lbl4: TLabel;
+    lbl5: TLabel;
+    lbl6: TLabel;
     procedure FormCreate(Sender: TObject);
     procedure btnopenClick(Sender: TObject);
     procedure btn1Click(Sender: TObject);
     procedure btn2Click(Sender: TObject);
+    procedure strngrd2DrawCell(Sender: TObject; ACol, ARow: Integer;
+      Rect: TRect; State: TGridDrawState);
   private
     { Private declarations }
   public
-    procedure ControlC(data: string;var i: integer; ClTyp:Types);
+    procedure ControlC(data: string;var i: integer; ClTyp:Types; i_o:Boolean);
     procedure Analysis(const text: string);
     procedure Add(MainZv: Adr; const title: string; ClTyp:Types; i_o:Boolean);
     procedure Print;
@@ -48,10 +58,10 @@ type
 var
   Form1: TForm1;
   FileName1 :string;
-  Operator: Adr;  //Адрес начала списка операторов
   Operand: Adr;   //Адрес начала списка операндов
   comment,flDo, flCase: boolean;
-  CountOperator, CountOperand:integer;
+  Q: Real;
+
 implementation
 
 {$R *.dfm}
@@ -63,14 +73,33 @@ begin
   //Создание списка
   New(Operand);
   Operand.Next := nil;
-
   Row := 0;
-  strngrd1.Cells[0,Row] := '          j';
-  strngrd1.Cells[1,Row] := '    Оператор';
-  strngrd1.Cells[2,Row] := '          f1j';
-  strngrd1.Cells[3,Row] := '          i';
-  strngrd1.Cells[4,Row] := '     Операнд';
-  strngrd1.Cells[5,Row] := '          f2j';
+  strngrd1.Cells[0,Row] := 'Идентификатор';
+  strngrd1.Cells[1,Row] := 'Спен';
+  strngrd1.RowCount:= 1;
+  lblSumSpen.Caption := 'Суммарный спен программы = ';
+  lbl5.Caption := 'Qп = ';
+  lbl6.Caption := 'Qв = ';
+  strngrd2.Cells[0,Row] := #10#13#10#13'Группа'#13#10'перем-х';
+  strngrd2.Cells[1,Row] := #10#13#10#13'        P';
+  strngrd2.Cells[2,Row] := #10#13#10#13'        M';
+  strngrd2.Cells[3,Row] := #10#13#10#13'        C';
+  strngrd2.Cells[4,Row] := #10#13#10#13'        T';
+  strngrd2.Cells[5,Row] := #10#13#10#13'        P';
+  strngrd2.Cells[6,Row] := #10#13#10#13'        M';
+  strngrd2.Cells[7,Row] := #10#13#10#13'        C';
+  strngrd2.Cells[8,Row] := #10#13#10#13'        T';
+  strngrd2.Cells[0,1] := 'Перем-е,'#10#13'относ-ся'#10#13'к группе';
+  strngrd2.Cells[0,2] := 'Кол-во'#10#13'перем-х'#10#13'в группе';
+  strngrd2.Cells[1,2] := '    p = ';
+  strngrd2.Cells[2,2] := '    m = ';
+  strngrd2.Cells[3,2] := '    c = ';
+  strngrd2.Cells[4,2] := '    t = ';
+  strngrd2.Cells[5,2] := '    p = ';
+  strngrd2.Cells[6,2] := '    m = ';
+  strngrd2.Cells[7,2] := '    c = ';
+  strngrd2.Cells[8,2] := '    t = ';
+  strngrd2.RowCount:= 3;
 end;
 
 procedure TForm1.btnopenClick(Sender: TObject);
@@ -88,17 +117,38 @@ begin
   with strngrd1 do
   for i:=0 to ColCount-1 do
     Cols[i].Clear;
-  Row := 0;
-  strngrd1.Cells[0,Row] := '          j';
-  strngrd1.Cells[1,Row] := '    Оператор';
-  strngrd1.Cells[2,Row] := '          f1j';
-  strngrd1.Cells[3,Row] := '          i';
-  strngrd1.Cells[4,Row] := '     Операнд';
-  strngrd1.Cells[5,Row] := '          f2j';
   strngrd1.RowCount:= 1;
-  vouge.Caption:='';
-  gucci.Caption := '';
-  cosmos.Caption := '';
+
+  with strngrd2 do
+  for i:=0 to ColCount-1 do
+    Cols[i].Clear;
+  Row := 0;
+  strngrd1.Cells[0,Row] := 'Идентификатор';
+  strngrd1.Cells[1,Row] := 'Спен';
+
+  strngrd2.Cells[0,Row] := #10#13#10#13'Группа'#13#10'перем-х';
+  strngrd2.Cells[1,Row] := #10#13#10#13'        P';
+  strngrd2.Cells[2,Row] := #10#13#10#13'        M';
+  strngrd2.Cells[3,Row] := #10#13#10#13'        C';
+  strngrd2.Cells[4,Row] := #10#13#10#13'        T';
+  strngrd2.Cells[5,Row] := #10#13#10#13'        P';
+  strngrd2.Cells[6,Row] := #10#13#10#13'        M';
+  strngrd2.Cells[7,Row] := #10#13#10#13'        C';
+  strngrd2.Cells[8,Row] := #10#13#10#13'        T';
+  strngrd2.Cells[0,1] := 'Перем-е,'#10#13'относ-ся'#10#13'к группе';
+  strngrd2.Cells[0,2] := 'Кол-во'#10#13'перем-х'#10#13'в группе';
+  strngrd2.Cells[1,2] := '    p = ';
+  strngrd2.Cells[2,2] := '    m = ';
+  strngrd2.Cells[3,2] := '    c = ';
+  strngrd2.Cells[4,2] := '    t = ';
+  strngrd2.Cells[5,2] := '    p = ';
+  strngrd2.Cells[6,2] := '    m = ';
+  strngrd2.Cells[7,2] := '    c = ';
+  strngrd2.Cells[8,2] := '    t = ';
+  strngrd2.RowCount:= 3;
+  lblSumSpen.Caption := 'Суммарный спен программы = ';
+  lbl5.Caption := 'Qп = ';
+  lbl6.Caption := 'Qв = ';
 end;
 
 procedure TForm1.btn2Click(Sender: TObject);
@@ -109,59 +159,77 @@ var
 begin
   comment:=False;
   AssignFile(MyFile, FileName1);
-   Reset(MyFile);
-   //создание заглавных звеньев списков
-   New(Operand);
-   Operand.Next := Nil;
-   text1 := '';
-
-   while not (eof(MyFile)) do
-   begin
-      read(Myfile, ch);
-      if (ch = ';') or (ch = #10) or (ch = #13) then
-      begin
+  Reset(MyFile);
+  //создание заглавного звеньев списков
+  New(Operand);
+  Operand.Next := Nil;
+  text1 := '';
+  while not (eof(MyFile)) do
+  begin
+     read(Myfile, ch);
+     if (ch = #10) or (ch = #13) then
+     begin
         if ch = ';' then
           text1 := text1 + ch
         else
-          read(MyFile, ch);
+         read(MyFile, ch);
 
-      Analysis(text1+' ');//анализ строки
-      text1:='';
-      end
-      else
-        text1 := text1 + ch;
-   end;
-   if text1<>'' then
+       Analysis(text1+' ');//анализ строки
+       text1:='';
+     end
+     else
+       text1 := text1 + ch;
+  end;
+  if text1<>'' then
     Analysis(text1+' ');//анализ строки
-   CloseFile(MyFile);
-   print;
-   
+  CloseFile(MyFile);
+  print;
 end;
 
-procedure TForm1.ControlC(data: string;var i: integer; ClTyp:Types);
+procedure TForm1.ControlC(data: string;var i: integer; ClTyp:Types; i_o:Boolean);
 var
   CurrStr:string;
+  StrBol:Boolean;
+  j:integer;
 begin
    CurrStr:='';
-   while i <= length(text) do
+   StrBol:=False;
+   j:=0;
+   while i <= length(data) do
    begin
-     //Литералы/стоки не обрабатываются!!
-      case text[i] of
+      case data[i] of
        '$','_','a'..'z','A'..'Z','0'..'9': begin
-                                              CurrStr:= CurrStr + text[i];
-                                              if (CurrStr='var') and (text[i+1]= ' ') then
+                                              if not StrBol then
                                               begin
-                                                CurrStr:='';
-                                                inc(i);
-                                              end;
+                                                CurrStr:= CurrStr + data[i];
+                                                if (CurrStr='var') and (data[i+1]= ' ') then
+                                                begin
+                                                  CurrStr:='';
+                                                  inc(i);
+                                                end;
 
-                                              if (text[i] in ['0'..'9']) and (length(CurrStr)=1) then
-                                                 CurrStr:='';
+                                                if (data[i] in ['0'..'9']) and (length(CurrStr)=1) then
+                                                   CurrStr:='';
+                                              end;
                                            end;
+       '"':begin //Обработка литералов/строк
+
+              if j= 0 then
+              begin
+                StrBol:=true;
+                inc(j);
+              end
+              else
+              begin
+                StrBol:=false;
+                dec(j);
+              end; 
+           end;
+
        else
        begin
          if (CurrStr<>'') then
-           Add(Operand,CurrStr,ClTyp,False);
+           Add(Operand,CurrStr,ClTyp,i_o);
          CurrStr:='';
        end;
       end;
@@ -174,79 +242,100 @@ procedure TForm1.Analysis(const text: string);
 var
   i: integer;
   currStr, ComplAr: string;
-
 begin
    i := 1;
    currStr := '';
-   while i <= length(text) do
+   if (pos('*/', text) <> 0) then
+   begin
+   comment := false;
+   i := length(text)+1;
+   end;
+   while (i <= length(text)) and (not comment) do
    begin
      if comment then
        ComplAr := ComplAr + text[i]
-       else
-     case text[i] of
+     else
+     begin
+      case text[i] of
        '$','_','a'..'z','A'..'Z','0'..'9': begin
-       
                                               if (currStr<>'') and (pos('=',ComplAr)<>0) and (length(ComplAr) <> 0) then  //++--
                                               begin
-                                                Add(Operator, CurrStr, M, False);
+                                                Add(Operand, CurrStr, M, False);
+                                                CurrStr:='';
                                                 ComplAr :='';
                                               end;
                                               if (currStr<>'') and (pos('=',ComplAr)=0) and (length(ComplAr) <> 0) then
                                               begin
-                                                Add(Operator, CurrStr, G, False);
+                                                Add(Operand, CurrStr, G, False);
+                                                CurrStr:='';
                                                 ComplAr :='';
                                               end;
+                                              if (text[i] in ['0'..'9']) and (length(CurrStr)=1) then
+                                                 CurrStr:='';
 
                                               currStr := currStr + text[i];
+                                              if ((currStr = 'do') and (text[i+1]='{')) or (currStr = 'case') then
+                                              begin
+                                                currStr := '';
+                                              end;
+                                              if ((currStr = 'while') or
+                                                 (currStr = 'for') or
+                                                 (currStr = 'switch') or
+                                                 (currStr = 'if')) and (text[i+1]='(')
+                                              then
+                                              begin
+                                                 i:=i+2;
+                                                 ControlC(text,i,C,False);
+                                                 currStr := '';
+                                              end;
 
-                                                 if (currStr = 'do') and (text[i+1]='{') then
-                                                 begin
-                                                  currStr := '';
-                                                 end;
+                                              if (currstr = 'function') and (text[i+1]=' ') then
+                                                begin
+                                                  while (text[i]<>'(') do
+                                                  begin
+                                                    inc(i)
+                                                  end;
+                                                  inc(i);
+                                                  ControlC(text,i,T,False);
+                                                end;
 
-                                                 if ((currStr = 'while') or
-                                                    (currStr = 'for') or
-                                                    (currStr = 'switch') or
-                                                    (currStr = 'if')) and (text[i+1]='(')
-                                                    then
-                                                 begin
-                                                   i:=i+2;
-                                                   ControlC(text,i,C);
-                                                   currStr := '';
-                                                 end;
-
-                                                 if ((currStr = 'function') or
-                                                    (currStr = 'var') or
-                                                    (currStr = 'let') or
-                                                    (currStr = 'const')) and
-                                                    ((text[i+1]=' ') or (text[i+1]='(')) then
-                                                 begin
-                                                   i:=i+2;
-                                                   ControlC(text,i,T); 
-                                                   currStr := '';
-                                                 end;
-
-                                               end;
+                                              if ((currStr = 'var') or(currStr = 'let')
+                                                or(currStr = 'const')) and
+                                                 ((text[i+1]=' ') or (text[i+1]='(')) then
+                                              begin
+                                                 i:=i+2;
+                                                 if currStr = 'const' then
+                                                   ControlC(text,i,M,False)
+                                                 else
+                                                   ControlC(text,i,T,False);
+                                                 currStr := '';
+                                              end;
+                                              if ((currStr = 'alert') or (currStr = 'prompt'))then
+                                              begin
+                                                 i:=i+2;
+                                                 if (currStr = 'alert') then
+                                                   ControlC(text,i,T,True)
+                                                 else
+                                                   ControlC(text,i,P,True);
+                                                 currStr := '';
+                                              end;
+                                              if (currStr = 'break') or (currStr = 'continue') or (currStr = 'return')then
+                                              begin
+                                                 currStr := '';
+                                              end;
+                                           end;
 
         '(': begin
-
-               if currStr <> '' then
+               if (currStr <> '') and (ComplAr='') then
                begin
-                 Add(Operator, currStr + '( )', T, False); // ТИП и ВВ.ВЫВод
+                 inc(i);
+                 ControlC(text,i,M,False);
                  currStr := '';
-               end
-               else
-               begin
-                 if ComplAr <> '' then
-                 begin
-                   Add(Operator, ComplAr, T, False); // ТИП и ВВ-ВЫВ
-                   ComplAr := '';
-                 end;
-                 Add(Operator, '( )', T,  False);
                end;
              end;
 
-         '+','-','*','/','%','=','>','<','!','&','|','^',',',';': begin
+         '+','-','*','/','%','=','>','<','!','&','|','^',',',';',')','{','}','[',']':
+                                                                      begin
                                                                         ComplAr := ComplAr + text[i];
 
                                                                         if text[i] = ';' then
@@ -259,7 +348,6 @@ begin
                                                                           if (ComplAr <> '') and (ComplAr <> ';') then
                                                                           begin
                                                                             ComplAr[length(ComplAr)] := #0;
-
                                                                           end;
                                                                         end;
 
@@ -271,19 +359,28 @@ begin
          ':': begin
                 CurrStr:='';
               end;
+         '"': begin
+                 inc(i);
+                 while text[i] <> '"' do
+                 begin
+                   inc(i);
+                 end;
+                 inc(i);
+               end;
 
-              end;
+     end; //конец case
 
-     end; // конец case
 
      if ComplAr = '/*' then comment := true;
-     if pos('*/', ComplAr) <> 0 then
+     {if pos('*/', ComplAr) <> 0 then
      begin
        comment := false;
        ComplAr := '';
-     end;
+     end;}
      inc(i);
     end;
+end;
+end;
 
 procedure TForm1.Add(MainZv: Adr; const title: string; ClTyp:Types; i_o:Boolean );
 var
@@ -297,11 +394,11 @@ begin
     AdrZv := AdrZv^.Next;
     if AdrZv^.Name = title then
     begin
-      if ord(AdrZv.ClassType)<ord(ClTyp)then
-      AdrZv.ClassType:= ClTyp;
+      if ord(AdrZv^.ClassType)<ord(ClTyp)then
+      AdrZv^.ClassType:= ClTyp;
       if i_o=True then
-      AdrZv.In_Out:=True;
-      inc(AdrZv.Count);
+      AdrZv^.In_Out:=True;
+      inc(AdrZv^.Count);
       fl := False; // элемент найден
     end;
   end;
@@ -311,59 +408,131 @@ begin
     AdrZv := AdrZv^.Next;
     AdrZv^.Next := Nil;
     AdrZv^.Name := title;
-    AdrZv^.Count := 1;
+    AdrZv^.Count := 0;
     AdrZv.ClassType:= ClTyp;
     AdrZv.In_Out:=i_o;
   end;
 end;
 
+// Вывод результатов
 procedure TForm1.Print;
 var
   AdrZv:Adr;
-  i,j:integer;
-  countoper1,countoper2,countcount:integer;
-  shape:real;
+  j:integer;
+  OpCount: Integer;
+  TCount, GCount, PCount, MCount, CCount, TCountIO, GCountIO, PCountIO, MCountIO, CCountIO: Integer;
 begin
-  i:=0;
-  j:=0;
-  if CountOperand>CountOperator then
-  countcount:= CountOperand
-  else
-  countcount:=CountOperator;
-  strngrd1.RowCount:= strngrd1.RowCount+countcount+1;
-  countoper1:= 0;
-  AdrZv := Operator;
+  AdrZv := Operand;
+  // Вывод спена
+  j := 0;
+  OpCount := 0;
   repeat
     inc(j);
+    strngrd1.RowCount:=strngrd1.RowCount+1;
     AdrZv := AdrZv^.Next;
-    strngrd1.Cells[0,j]:=inttostr(j);
-    strngrd1.Cells[1,j]:=AdrZv.Name;
-    strngrd1.Cells[2,j]:=inttostr(AdrZv.Count);
-    countoper1:= countoper1 + AdrZv.Count;
+    strngrd1.Cells[0,j]:=AdrZv^.Name;
+    strngrd1.Cells[1,j]:=inttostr(AdrZv^.Count);
+    OpCount:= OpCount + AdrZv^.Count;
   until AdrZv^.Next = Nil;
-  strngrd1.Cells[0,countcount+1]:='n1 = ' + inttostr(CountOperator);
-  strngrd1.Cells[2,countcount+1]:='N1 = ' + inttostr(countoper1);
-  countoper2:= 0;
-   AdrZv := Operand;
-  repeat
-    inc(i);
+  lblSumSpen.Caption := 'Суммарный спен программы = ' + inttostr(OpCount);
+
+    TCount := 0;
+    GCount := 0;
+    PCount := 0;
+    MCount := 0;
+    CCount := 0;
+    TCountIO := 0;
+    GCountIO := 0;
+    PCountIO := 0;
+    MCountIO := 0;
+    CCountIO := 0;
+
+  // Вывод метрики Чепина
+  AdrZv := Operand;
+  while AdrZv^.Next <> Nil  do
+  begin
     AdrZv := AdrZv^.Next;
-    strngrd1.Cells[3,i]:=inttostr(i);
-    strngrd1.Cells[4,i]:=AdrZv.Name;
-    strngrd1.Cells[5,i]:=inttostr(AdrZv.Count);
-    countoper2:= countoper2 + AdrZv.Count;
-  until AdrZv^.Next = Nil;
-  strngrd1.Cells[5,countcount+1]:='N2 = ' + inttostr(countoper2);
-  strngrd1.Cells[3,countcount+1]:='n2 = '+ inttostr(CountOperand);
-  vouge.Caption:='n = '+ inttostr(CountOperand + CountOperator);
-  gucci.Caption:='N = ' + inttostr(countoper1 + countoper2);
-  shape:=(countoper1 + countoper2)*log2(countoper1 + countoper2);
-  shape := roundto(shape,-2);
-  cosmos.Caption:='V = ' + floattostr( shape);
+    case ord(AdrZv^.ClassType) of
+      0: // класс T
+      begin
+        inc(TCount);
+        strngrd2.Cells[4,1]:=strngrd2.Cells[4,1] + AdrZv^.Name + #10#13;
+        if AdrZv.In_Out = True then
+        begin
+          strngrd2.Cells[8,1]:=strngrd2.Cells[8,1] + AdrZv^.Name + #10#13;
+          inc(TCountIO);
+        end;
+      end;
+      1: // класс G
+      begin
+        inc(MCount);
+        strngrd2.Cells[2,1]:=strngrd2.Cells[2,1] + AdrZv^.Name + #10#13;
+        if AdrZv.In_Out = True then
+        begin
+          strngrd2.Cells[6,1]:=strngrd2.Cells[6,1] + AdrZv^.Name + #10#13;
+          inc(MCountIO);
+        end;
+      end;
+      2: // класс P
+      begin
+        inc(PCount);
+        strngrd2.Cells[1,1]:=strngrd2.Cells[1,1] + AdrZv^.Name + #10#13;
+        if AdrZv.In_Out = True then
+        begin
+          strngrd2.Cells[5,1]:=strngrd2.Cells[5,1] + AdrZv^.Name + #10#13;
+          inc(PCountIO);
+        end;
+      end;
+      3: // класс M
+      begin
+        inc(MCount);
+        strngrd2.Cells[2,1]:=strngrd2.Cells[2,1] + AdrZv^.Name + #10#13;
+        if AdrZv.In_Out = True then
+        begin
+          strngrd2.Cells[6,1]:=strngrd2.Cells[6,1] + AdrZv^.Name + #10#13;
+          inc(MCountIO);
+        end;
+      end;
+      4: // класс C
+      begin
+        inc(CCount);
+        strngrd2.Cells[3,1]:=strngrd2.Cells[3,1] + AdrZv^.Name + #10#13;
+        if AdrZv.In_Out = True then
+        begin
+          strngrd2.Cells[7,1]:=strngrd2.Cells[7,1] + AdrZv^.Name + #10#13;
+          inc(CCountIO);
+        end;
+      end;
+    end;
+  end;
+
+  strngrd2.Cells[1,2] := strngrd2.Cells[1,2] + IntToStr(PCount);
+  strngrd2.Cells[2,2] := strngrd2.Cells[2,2] + IntToStr(MCount);
+  strngrd2.Cells[3,2] := strngrd2.Cells[3,2] + IntToStr(CCount);
+  strngrd2.Cells[4,2] := strngrd2.Cells[4,2] + IntToStr(TCount);
+  strngrd2.Cells[5,2] := strngrd2.Cells[5,2] + IntToStr(PCountIO);
+  strngrd2.Cells[6,2] := strngrd2.Cells[6,2] + IntToStr(MCountIO);
+  strngrd2.Cells[7,2] := strngrd2.Cells[7,2] + IntToStr(CCountIO);
+  strngrd2.Cells[8,2] := strngrd2.Cells[8,2] + IntToStr(TCountIO);
+  Q := 1 * PCount + 2 * MCount + 3 * CCount + 0.5 * TCount;
+  lbl5.Caption := lbl5.Caption + '1 * '+IntToStr(PCount)+' + 2 * '+IntToStr(MCount)+' + 3 * '+IntToStr(CCount)+' + 0.5 * ' +IntToStr(TCount)+' = ' + FloatToStr(Q);
+  Q := 1 * PCountIO + 2 * MCountIO + 3 * CCountIO + 0.5 * TCountIO;
+  lbl6.Caption := lbl6.Caption + '1 * '+IntToStr(PCountIO)+' + 2 * '+IntToStr(MCountIO)+' + 3 * '+IntToStr(CCountIO)+' + 0.5 * ' +IntToStr(TCountIO)+' = ' + FloatToStr(Q);
 end;
 
-
-
-
+procedure TForm1.strngrd2DrawCell(Sender: TObject; ACol, ARow: Integer;
+  Rect: TRect; State: TGridDrawState);
+var
+  s: string;
+  H: Integer;
+begin
+  strngrd2.Canvas.FillRect(Rect);
+  s := strngrd2.Cells[ACol,ARow];
+  Inc(Rect.Left,3);
+  Dec(Rect.Right,3);
+  H := DrawText(strngrd2.Canvas.Handle,PChar(s),length(s),Rect,DT_LEFT);
+  if H > strngrd2.RowHeights[ARow] then
+    strngrd2.RowHeights[ARow] := H;  //увеличиваем
+end;
 
 end.

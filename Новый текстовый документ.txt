@@ -1,0 +1,8 @@
+function Deal(deck, n, i)
+{
+	var win, curr, eps, z;
+	const M = 9;
+	max = 0;
+	eval("Стол\n");
+	for(i = 0; i < 5; i++)
+}
